@@ -40,7 +40,8 @@ dependencies:
   path_provider: ^2.0.0
   path: ^1.8.0
   qr_flutter: ^4.0.0
-  barcode_widget: ^2.0.0
+#  barcode_widget: ^2.0.0
+  barcode_widget:
   intl:
   fl_chart:
   share_plus:
@@ -53,7 +54,7 @@ dependencies:
   file_selector:
 #  image_gallery_saver: ^2.0.3
   screenshot:
-  gallery_saver: ^2.3.2
+#  gallery_saver: ^2.3.2
 
 
 dev_dependencies:

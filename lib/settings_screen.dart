@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:barqr_manager/settings_repository.dart';
 import 'package:csv/csv.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
@@ -38,6 +39,42 @@ class SettingsScreen extends StatelessWidget {
           _PermissionsSection(),
           SizedBox(height: AppSpacing.large),
           _AboutSection(),
+          // TODO the export tile refactore later
+          SizedBox(height: AppSpacing.large),
+          ListTile(
+            leading: Icon(Icons.folder, color: AppColors.info),
+            title: Text('Save Location'),
+            subtitle: FutureBuilder<String>(
+              future: SettingsRepository().getSaveLocation(),
+              builder: (context, snapshot) {
+                return Text(snapshot.data == 'internal'
+                    ? 'Internal Storage/BarQR Manager'
+                    : 'App Documents');
+              },
+            ),
+            trailing: DropdownButton<String>(
+              value: 'internal',
+              items: [
+                DropdownMenuItem(
+                  value: 'internal',
+                  child: Text('Internal Storage'),
+                ),
+                DropdownMenuItem(
+                  value: 'app',
+                  child: Text('App Documents'),
+                ),
+              ],
+              onChanged: (value) async {
+                if (value != null) {
+                  await SettingsRepository().setSaveLocation(value);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Save location updated')),
+                  );
+                  context.read<ScannedResultsCubit>().fetchResults();
+                }
+              },
+            ),
+          ),
         ],
       ),
     );
