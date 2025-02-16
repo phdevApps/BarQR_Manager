@@ -1,0 +1,5 @@
+package icu.phdevlog.barqr_manager
+
+import io.flutter.embedding.android.FlutterActivity
+
+class MainActivity: FlutterActivity()

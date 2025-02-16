@@ -1,0 +1,135 @@
+> Task :gradle:compileJava NO-SOURCE
+> Task :gradle:compileGroovy UP-TO-DATE
+> Task :gradle:pluginDescriptors UP-TO-DATE
+> Task :gradle:processResources UP-TO-DATE
+> Task :gradle:classes UP-TO-DATE
+> Task :gradle:jar UP-TO-DATE
+WARNING: We recommend using a newer Android Gradle plugin to use compileSdk = 34
+
+This Android Gradle plugin (8.1.0) was tested up to compileSdk = 33 (and compileSdkPreview = "UpsideDownCakePrivacySandbox").
+
+You are strongly encouraged to update your project to use a newer
+Android Gradle plugin that has been tested with compileSdk = 34.
+
+If you are already using the latest version of the Android Gradle plugin,
+you may need to wait until a newer version with support for compileSdk = 34 is available.
+
+To suppress this warning, add/update
+    android.suppressUnsupportedCompileSdk=34
+to this project's gradle.properties.
+WARNING: We recommend using a newer Android Gradle plugin to use compileSdk = 35
+
+This Android Gradle plugin (8.1.0) was tested up to compileSdk = 33 (and compileSdkPreview = "UpsideDownCakePrivacySandbox").
+
+You are strongly encouraged to update your project to use a newer
+Android Gradle plugin that has been tested with compileSdk = 35.
+
+If you are already using the latest version of the Android Gradle plugin,
+you may need to wait until a newer version with support for compileSdk = 35 is available.
+
+To suppress this warning, add/update
+    android.suppressUnsupportedCompileSdk=35
+to this project's gradle.properties.
+> Task :android_intent_plus:preBuild UP-TO-DATE
+> Task :android_intent_plus:preDebugBuild UP-TO-DATE
+> Task :android_intent_plus:mergeDebugJniLibFolders UP-TO-DATE
+> Task :android_intent_plus:mergeDebugNativeLibs NO-SOURCE
+> Task :android_intent_plus:stripDebugDebugSymbols NO-SOURCE
+> Task :android_intent_plus:copyDebugJniLibsProjectAndLocalJars UP-TO-DATE
+> Task :android_intent_plus:generateDebugResValues UP-TO-DATE
+> Task :android_intent_plus:generateDebugResources UP-TO-DATE
+> Task :android_intent_plus:packageDebugResources UP-TO-DATE
+> Task :android_intent_plus:parseDebugLocalResources UP-TO-DATE
+> Task :android_intent_plus:processDebugManifest UP-TO-DATE
+> Task :android_intent_plus:generateDebugRFile UP-TO-DATE
+> Task :android_intent_plus:extractDebugAnnotations UP-TO-DATE
+> Task :android_intent_plus:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :android_intent_plus:javaPreCompileDebug UP-TO-DATE
+> Task :android_intent_plus:compileDebugJavaWithJavac UP-TO-DATE
+> Task :android_intent_plus:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :android_intent_plus:mergeDebugConsumerProguardFiles UP-TO-DATE
+> Task :android_intent_plus:mergeDebugShaders UP-TO-DATE
+> Task :android_intent_plus:compileDebugShaders NO-SOURCE
+> Task :android_intent_plus:generateDebugAssets UP-TO-DATE
+> Task :android_intent_plus:packageDebugAssets UP-TO-DATE
+> Task :android_intent_plus:prepareDebugArtProfile UP-TO-DATE
+> Task :android_intent_plus:prepareLintJarForPublish UP-TO-DATE
+> Task :android_intent_plus:processDebugJavaRes NO-SOURCE
+> Task :android_intent_plus:mergeDebugJavaResource UP-TO-DATE
+> Task :android_intent_plus:syncDebugLibJars UP-TO-DATE
+> Task :android_intent_plus:writeDebugAarMetadata UP-TO-DATE
+> Task :android_intent_plus:bundleDebugAar UP-TO-DATE
+> Task :android_intent_plus:assembleDebug UP-TO-DATE
+> Task :android_intent_plus:preProfileBuild UP-TO-DATE
+> Task :android_intent_plus:mergeProfileJniLibFolders
+> Task :android_intent_plus:mergeProfileNativeLibs NO-SOURCE
+> Task :android_intent_plus:stripProfileDebugSymbols NO-SOURCE
+> Task :android_intent_plus:copyProfileJniLibsProjectAndLocalJars
+> Task :android_intent_plus:generateProfileResValues
+> Task :android_intent_plus:extractDeepLinksForAarProfile
+> Task :android_intent_plus:generateProfileResources
+> Task :android_intent_plus:packageProfileResources
+> Task :android_intent_plus:parseProfileLocalResources
+> Task :android_intent_plus:javaPreCompileProfile
+> Task :android_intent_plus:mergeProfileShaders
+> Task :android_intent_plus:compileProfileShaders NO-SOURCE
+> Task :android_intent_plus:generateProfileAssets UP-TO-DATE
+> Task :android_intent_plus:packageProfileAssets
+> Task :android_intent_plus:prepareProfileArtProfile
+> Task :android_intent_plus:processProfileJavaRes NO-SOURCE
+> Task :android_intent_plus:writeProfileAarMetadata
+> Task :android_intent_plus:processProfileManifest
+> Task :android_intent_plus:mergeProfileJavaResource
+> Task :android_intent_plus:mapProfileSourceSetPaths
+> Task :android_intent_plus:generateProfileRFile
+> Task :android_intent_plus:mergeProfileResources
+> Task :android_intent_plus:extractProfileAnnotations
+
+> Task :android_intent_plus:compileProfileJavaWithJavac
+
+> Task :android_intent_plus:mergeProfileGeneratedProguardFiles
+> Task :android_intent_plus:mergeProfileConsumerProguardFiles
+> Task :android_intent_plus:syncProfileLibJars
+> Task :android_intent_plus:bundleProfileAar
+> Task :android_intent_plus:preReleaseBuild UP-TO-DATE
+> Task :android_intent_plus:mergeReleaseJniLibFolders
+> Task :android_intent_plus:mergeReleaseNativeLibs NO-SOURCE
+> Task :android_intent_plus:stripReleaseDebugSymbols NO-SOURCE
+> Task :android_intent_plus:copyReleaseJniLibsProjectAndLocalJars
+> Task :android_intent_plus:generateReleaseResValues
+> Task :android_intent_plus:extractDeepLinksForAarRelease
+> Task :android_intent_plus:generateReleaseResources
+> Task :android_intent_plus:packageReleaseResources
+> Task :android_intent_plus:processReleaseManifest
+> Task :android_intent_plus:parseReleaseLocalResources
+> Task :android_intent_plus:mergeReleaseShaders
+> Task :android_intent_plus:compileReleaseShaders NO-SOURCE
+> Task :android_intent_plus:generateReleaseAssets UP-TO-DATE
+> Task :android_intent_plus:packageReleaseAssets
+> Task :android_intent_plus:prepareReleaseArtProfile UP-TO-DATE
+> Task :android_intent_plus:processReleaseJavaRes NO-SOURCE
+> Task :android_intent_plus:generateReleaseRFile
+> Task :android_intent_plus:extractReleaseAnnotations
+> Task :android_intent_plus:mapReleaseSourceSetPaths
+> Task :android_intent_plus:writeReleaseAarMetadata
+> Task :android_intent_plus:javaPreCompileRelease
+> Task :android_intent_plus:mergeReleaseJavaResource
+> Task :android_intent_plus:mergeReleaseResources
+> Task :android_intent_plus:verifyProfileResources
+
+> Task :android_intent_plus:compileReleaseJavaWithJavac
+
+> Task :android_intent_plus:assembleProfile
+> Task :android_intent_plus:mergeReleaseGeneratedProguardFiles UP-TO-DATE
+> Task :android_intent_plus:mergeReleaseConsumerProguardFiles
+> Task :android_intent_plus:syncReleaseLibJars
+> Task :android_intent_plus:bundleReleaseAar
+> Task :android_intent_plus:bundleDebugLocalLintAar
+> Task :android_intent_plus:bundleLibRuntimeToJarDebug
+> Task :android_intent_plus:extractProguardFiles
+> Task :android_intent_plus:createFullJarDebug
+> Task :android_intent_plus:preDebugAndroidTestBuild UP-TO-DATE
+> Task :android_intent_plus:generateDebugAndroidTestResValues
+> Task :android_intent_plus:writeDebugLintModelMetadata
+> Task :android_intent_plus:verifyReleaseResources
+> Task :android_intent_plus:lintAnalyzeDebug
