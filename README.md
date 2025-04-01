@@ -1,0 +1,1 @@
+# BarQR_Manager
