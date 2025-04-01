@@ -17,17 +17,14 @@ import 'package:path_provider/path_provider.dart';
 import 'package:flutter/services.dart';
 import 'package:barqr_manager/settings_repository.dart';
 import 'package:path/path.dart' as path;
+import 'package:url_launcher/url_launcher.dart';
 
 class SavedScreen extends StatelessWidget {
   final ScreenshotController screenshotController = ScreenshotController();
   final SettingsRepository _settingsRepo = SettingsRepository();
-  // print('=========>clicked');
-  // print('=========>clicked');
-  // print('=========>clicked');
-  // print('=========>clicked');
 
-
-  Future<Uint8List?> _generateBarcodeImage(BuildContext context, ScannedResult result) async {
+  Future<Uint8List?> _generateBarcodeImage(
+      BuildContext context, ScannedResult result) async {
     try {
       // Use ScreenshotController's captureFromWidget method.
       // You can adjust the delay and pixelRatio as needed.
@@ -56,6 +53,26 @@ class SavedScreen extends StatelessWidget {
     return status.isGranted;
   }
 
+  Future<Directory> getDefaultSaveDirectory() async {
+    final settingsRepo = SettingsRepository();
+    final mode = await settingsRepo.getSaveLocation();
+    if (mode == 'internal') {
+      // Write to shared storage (requires proper permissions, e.g. MANAGE_EXTERNAL_STORAGE on Android 11+)
+      return Directory('/storage/emulated/0/BarQR Manager');
+    } else if (mode == 'app') {
+      return await getApplicationDocumentsDirectory();
+    } else if (mode == 'custom') {
+      final customPath = await settingsRepo.getCustomSavePath();
+      if (customPath != null && customPath.isNotEmpty) {
+        return Directory(customPath);
+      }
+      // Fallback to internal if custom path not set.
+      return Directory('/storage/emulated/0/BarQR Manager');
+    }
+    // Fallback
+    return Directory('/storage/emulated/0/BarQR Manager');
+  }
+
   Future<void> _exportResult(BuildContext context, ScannedResult result) async {
     try {
       // Request all-files permission.
@@ -72,7 +89,8 @@ class SavedScreen extends StatelessWidget {
         builder: (context) {
           return AlertDialog(
             title: Text("Select Save Location"),
-            content: Text("Save using the default location or choose a custom path?"),
+            content: Text(
+                "Save using the default location or choose a custom path?"),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, true),
@@ -97,20 +115,26 @@ class SavedScreen extends StatelessWidget {
         return;
       }
 
-      Directory dir=Directory('/storage/emulated/0/BarQR Manager');
+      // Directory dir=Directory('/storage/emulated/0/BarQR Manager');
+
+      Directory dir = await getDefaultSaveDirectory();
+      if (!await dir.exists()) await dir.create(recursive: true);
+
       if (useDefaultPath) {
         Directory dir = Directory('/storage/emulated/0/BarQR Manager');
         if (!await dir.exists()) await dir.create(recursive: true);
       } else {
         // Use a file picker to select a directory (e.g. via file_selector package).
-        final String? selectedDir = await getDirectoryPath(); // Ensure you import and configure file_selector
+        final String? selectedDir =
+            await getDirectoryPath(); // Ensure you import and configure file_selector
         if (selectedDir == null) return;
         dir = Directory(selectedDir);
       }
 
       if (!await dir.exists()) await dir.create(recursive: true);
 
-      final filename = '${result.title}_${result.timestamp.millisecondsSinceEpoch}.png';
+      final filename =
+          '${result.title}_${result.timestamp.millisecondsSinceEpoch}.png';
       final file = File(path.join(dir.path, filename));
       await file.writeAsBytes(image);
 
@@ -125,13 +149,11 @@ class SavedScreen extends StatelessWidget {
     }
   }
 
-
-
-
 // Capture widget as an image
   Future<Uint8List?> _captureWidgetAsImage(GlobalKey repaintBoundaryKey) async {
     try {
-      final boundary = repaintBoundaryKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+      final boundary = repaintBoundaryKey.currentContext?.findRenderObject()
+          as RenderRepaintBoundary?;
       if (boundary == null) return null;
 
       final image = await boundary.toImage();
@@ -156,7 +178,6 @@ class SavedScreen extends StatelessWidget {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -175,16 +196,60 @@ class SavedScreen extends StatelessWidget {
                 itemBuilder: (context, index) {
                   ScannedResult result = state.results[index];
                   return ListTile(
-                    contentPadding: EdgeInsets.symmetric(vertical: AppSpacing.medium),
+                    contentPadding:
+                        EdgeInsets.symmetric(vertical: AppSpacing.medium),
                     title: Text(result.title),
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('Type: ${_formatTypeName(result.format.name)}'),
-                        Text('Date: ${DateFormat('dd/MM/yyyy').format(result.timestamp)}'),
-                        Text('Time: ${DateFormat('hh:mm a').format(result.timestamp)}'),
+                        Text(
+                            'Date: ${DateFormat('dd/MM/yyyy').format(result.timestamp)}'),
+                        Text(
+                            'Time: ${DateFormat('hh:mm a').format(result.timestamp)}'),
                         SizedBox(height: 8),
-                        Text('Content: ${result.data}'),
+                        InkWell(
+                          onTap: () async {
+                            final uri = Uri.tryParse(result.data);
+                            // Check if the content is a valid HTTP or HTTPS URL.
+                            if (uri != null &&
+                                uri.hasScheme &&
+                                (uri.scheme == 'http' ||
+                                    uri.scheme == 'https')) {
+                              if (await canLaunchUrl(uri)) {
+                                await launchUrl(uri);
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                      content:
+                                          Text('Could not launch the URL')),
+                                );
+                              }
+                            }
+                          },
+                          onLongPress: () {
+                            Clipboard.setData(ClipboardData(text: result.data));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                  content: Text('Content copied to clipboard')),
+                            );
+                          },
+                          child: Text(
+                            'Content: ${result.data}',
+                            style: TextStyle(
+                              // Optionally underline and color the text if it looks like a link.
+                              decoration:
+                                  (Uri.tryParse(result.data)?.hasScheme ??
+                                          false)
+                                      ? TextDecoration.underline
+                                      : null,
+                              color: (Uri.tryParse(result.data)?.hasScheme ??
+                                      false)
+                                  ? Colors.blue
+                                  : Colors.black,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                     leading: Container(
@@ -208,7 +273,9 @@ class SavedScreen extends StatelessWidget {
                           icon: Icon(Icons.delete),
                           onPressed: () {
                             if (result.id != null) {
-                              context.read<ScannedResultsCubit>().deleteResult(result.id!);
+                              context
+                                  .read<ScannedResultsCubit>()
+                                  .deleteResult(result.id!);
                             }
                           },
                         ),

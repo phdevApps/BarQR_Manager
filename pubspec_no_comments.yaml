@@ -1,0 +1,51 @@
+name: barqr_manager
+description: "All in One Generator and Scanner for QR and Bar Codes"
+version: 1.0.1+1
+environment:
+  sdk: ^3.6.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  mobile_scanner: ^3.0.0
+  sqflite: ^2.0.2
+  equatable: ^2.0.3
+  path_provider: ^2.0.0
+  path: ^1.8.0
+  qr_flutter: ^4.0.0
+  package_info_plus: ^8.2.1
+  barcode_widget:
+  intl:
+  fl_chart:
+  share_plus:
+  shared_preferences: ^2.2.2
+  url_launcher: ^6.1.11
+  android_intent_plus:
+  vibration:
+  file_selector:
+  screenshot:
+  csv: 6.0.0
+  flutter_bloc: 9.0.0
+  permission_handler: 11.3.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+
+  flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.13.1 
+
+flutter_icons:
+  image_path: "logo/logo.png" 
+  android: true
+#  ios: true
+#  windows: true
+#  macos: true
+#  web: true
+
+
+flutter:
+
+  uses-material-design: true

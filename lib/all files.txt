@@ -1,0 +1,2648 @@
+#File: app_theme ============================================================
+import 'package:flutter/material.dart';
+
+class AppTheme {
+  static ThemeData lightTheme = ThemeData.light().copyWith(
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: AppColors.primaries.first,
+      brightness: Brightness.light,
+    ),
+    textTheme: const TextTheme(
+      displayLarge: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, height: 1.25),
+      titleLarge: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, height: 1.5),
+      titleMedium: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, height: 1.5),
+      bodyLarge: TextStyle(fontSize: 16, height: 1.5),
+      bodyMedium: TextStyle(fontSize: 14, height: 1.5),
+      bodySmall: TextStyle(fontSize: 12, height: 1.5),
+      labelLarge: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, height: 1.5),
+      labelMedium: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, height: 1.5),
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.small),
+        borderSide: BorderSide(color: AppColors.border),
+      ),
+      contentPadding: EdgeInsets.all(AppSpacing.medium),
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        padding: EdgeInsets.symmetric(
+          vertical: AppSpacing.medium,
+          horizontal: AppSpacing.large,
+        ),
+        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSpacing.small),
+        ),
+      ),
+    ),
+    cardTheme: CardTheme(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.medium),
+      ),
+      margin: EdgeInsets.zero,
+    ),
+    dialogTheme: DialogTheme(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.medium),
+      ),
+    ),
+  );
+
+
+
+  static ThemeData darkTheme = ThemeData.dark().copyWith(
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: AppColors.primaries.first,
+      brightness: Brightness.dark,
+    ),
+    textTheme: TextTheme(
+      displayLarge: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, height: 1.25, color: Colors.white),
+      titleLarge: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, height: 1.5, color: Colors.white),
+      titleMedium: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, height: 1.5, color: Colors.white),
+      bodyLarge: TextStyle(fontSize: 16, height: 1.5, color: Colors.white),
+      bodyMedium: TextStyle(fontSize: 14, height: 1.5, color: Colors.white70),
+      bodySmall: TextStyle(fontSize: 12, height: 1.5, color: Colors.white60),
+      labelLarge: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, height: 1.5, color: Colors.white),
+      labelMedium: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, height: 1.5, color: Colors.white),
+    ),
+    inputDecorationTheme: lightTheme.inputDecorationTheme.copyWith(labelStyle: TextStyle(color: Colors.grey[300]), hintStyle: TextStyle(color: Colors.grey[400]),),
+    elevatedButtonTheme: lightTheme.elevatedButtonTheme,
+    cardTheme: lightTheme.cardTheme,
+    dialogTheme: lightTheme.dialogTheme,
+    scaffoldBackgroundColor: Colors.grey[900],
+    appBarTheme: AppBarTheme(
+      backgroundColor: Colors.grey[850],
+      foregroundColor: Colors.white,
+    ),
+  );
+}
+
+class AppColors {
+  static List<Color> primaries = [
+    Colors.blue.shade800,
+    Colors.green.shade600,
+    Colors.purple.shade700,
+    Colors.orange.shade600,
+  ];
+
+  static Color success = Colors.green.shade600;
+  static Color warning = Colors.orange.shade600;
+  static Color error = Colors.red.shade400;
+  static Color info = Colors.blue.shade200;
+  static Color border = Colors.grey.shade400;
+}
+
+class AppSpacing {
+  static double xxsmall = 2;
+  static double xsmall = 4;
+  static double small = 8;
+  static double medium = 16;
+  static double large = 24;
+  static double xlarge = 32;
+  static double xxlarge = 48;
+
+  // Special dimensions
+  static double previewWidth = 260;
+  static double previewHeight = 140;
+}
+#File: barcode_format_utils.dart ============================================================
+import 'package:mobile_scanner/mobile_scanner.dart';
+
+class BarcodeFormatUtils {
+  static String toExportString(BarcodeFormat format) {
+    return format.name.toLowerCase().trim();
+  }
+
+  static BarcodeFormat fromImportString(String input) {
+    final cleaned = input
+        .trim()
+        .replaceAll('"', '')
+        .toLowerCase();
+
+    return BarcodeFormat.values.firstWhere(
+          (f) => toExportString(f) == cleaned,
+      orElse: () => BarcodeFormat.qrCode,
+    );
+  }
+}
+
+#File: code_preview.dart ============================================================
+import 'package:flutter/material.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:barcode_widget/barcode_widget.dart' as bw;
+import 'package:barqr_manager/app_theme.dart';
+import 'package:barqr_manager/code_types.dart';
+
+Widget codePreview(BarcodeFormat format, String data,BuildContext context) {
+  try {
+    int i = commonTypes(
+      formatName: format.name,
+      objFormats: bw.BarcodeType.values.toList(),
+    ).getFormatIndex();
+
+    return bw.BarcodeWidget(
+      data: data,
+      barcode: bw.Barcode.fromType(bw.BarcodeType.values[i]),
+      width: AppSpacing.previewWidth,
+      height: AppSpacing.previewHeight,
+      style: Theme.of(context).textTheme.titleMedium,
+      textPadding: AppSpacing.medium,
+    );
+  } catch (e) {
+    return Container();
+  }
+}
+
+#File: code_types.dart ============================================================
+// #barcode228 BarcodeType
+//
+// CodeITF16
+// CodeITF14
+// CodeEAN13
+// CodeEAN8
+// CodeEAN5
+// CodeEAN2
+// CodeISBN
+// Code39
+// Code93
+// CodeUPCA
+// CodeUPCE
+// Code128
+// GS128
+// Telepen
+// QrCode
+// Codabar
+// PDF417
+// DataMatrix
+// Aztec
+// Rm4scc
+// Itf
+//
+//
+// #mobilescanner357__BarcodeFormat
+// code128
+// code39
+// code93
+// codebar
+// dataMatrix
+// ean13
+// ean8
+// itf
+// qrCode
+// upcA
+// upcE
+// pdf417
+// aztec
+//
+// #common
+//
+// code128
+// code39
+// code93
+// dataMatrix
+// itf
+// qrCode
+// pdf417
+// aztec
+//
+// upcA=CodeUPCA
+// upcE=CodeUPCE
+// ean13=CodeEAN13
+// ean8=CodeEAN8
+// codebar=codabar
+//
+
+
+
+class commonTypes {
+
+  Map<String, String> types = {
+    "code128": "code128",
+    "code39": "code39",
+    "code93": "code93",
+    "dataMatrix": "dataMatrix",
+    "itf": "itf",
+    "qrCode": "qrCode",
+    "pdf417": "pdf417",
+    "aztec": "aztec",
+    "upcA": "CodeUPCA",
+    "upcE": "CodeUPCE",
+    "ean13": "CodeEAN13",
+    "ean8": "CodeEAN8",
+    "codebar": "codabar"
+  };
+  final bool widget;
+  final String formatName;
+  final List<dynamic> objFormats;
+  commonTypes({this.widget=false, required this.formatName, required this.objFormats});
+
+  getFormatIndex(){
+    return objFormats.indexWhere((it){
+      return types[formatName]?.toLowerCase() == it?.toString().split('.')[1].toLowerCase();
+    });
+  }
+}
+#File: create_screen.dart ============================================================
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:barqr_manager/app_theme.dart';
+import 'package:barqr_manager/code_preview.dart';
+import 'package:barqr_manager/database_helper.dart';
+import 'package:barqr_manager/scanned_result.dart';
+import 'package:barqr_manager/scanned_results_cubit.dart';
+
+class CreateScreen extends StatefulWidget {
+  @override
+  _CreateScreenState createState() => _CreateScreenState();
+}
+
+class _CreateScreenState extends State<CreateScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _contentController = TextEditingController();
+  BarcodeFormat _selectedFormat = BarcodeFormat.qrCode;
+
+  final Map<BarcodeFormat, RegExp> _formatValidators = {
+    BarcodeFormat.ean13: RegExp(r'^\d{13}$'),
+    BarcodeFormat.ean8: RegExp(r'^\d{8}$'),
+    BarcodeFormat.code39: RegExp(r'^[A-Z0-9\-\.\ \$\/\+\%]+$'),
+    BarcodeFormat.code93: RegExp(r'^[\x00-\x7F]+$'),
+    BarcodeFormat.code128: RegExp(r'^[\x00-\x7F]+$'),
+    BarcodeFormat.itf: RegExp(r'^\d+$'),
+    BarcodeFormat.upcA: RegExp(r'^\d{12}$'),
+    BarcodeFormat.upcE: RegExp(r'^\d{6,8}$'),
+    BarcodeFormat.codabar: RegExp(r'^[A-D][0-9\-\$\:\.\/\+]+[A-D]$'),
+    BarcodeFormat.pdf417: RegExp(r'.*'),
+    BarcodeFormat.aztec: RegExp(r'.*'),
+    BarcodeFormat.dataMatrix: RegExp(r'.*'),
+    BarcodeFormat.qrCode: RegExp(r'.*'),
+  };
+
+  final Map<BarcodeFormat, String> _validationMessages = {
+    BarcodeFormat.ean13: 'Must be exactly 13 digits',
+    BarcodeFormat.ean8: 'Must be exactly 8 digits',
+    BarcodeFormat.code39: 'Only A-Z, 0-9, and - . \$ / + %',
+    BarcodeFormat.code93: 'ASCII characters only',
+    BarcodeFormat.code128: 'ASCII characters only',
+    BarcodeFormat.itf: 'Digits only with even count',
+    BarcodeFormat.upcA: 'Must be 12 digits',
+    BarcodeFormat.upcE: 'Must be 6-8 digits',
+    BarcodeFormat.codabar: 'Must start/end with A-D and contain digits/symbols',
+    BarcodeFormat.pdf417: '',
+    BarcodeFormat.aztec: '',
+    BarcodeFormat.dataMatrix: '',
+    BarcodeFormat.qrCode: '',
+  };
+
+  final Map<BarcodeFormat, String> _formatInstructions = {
+    BarcodeFormat.ean13: '• Must be exactly 13 numeric digits\n• Example: 5901234123457',
+    BarcodeFormat.ean8: '• Must be exactly 8 numeric digits\n• Example: 96385074',
+    BarcodeFormat.code39: '• Letters (A-Z), numbers (0-9), and symbols (- . \$ / + %)\n• Example: ABC-123',
+    BarcodeFormat.code93: '• ASCII characters only\n• Example: SAMPLE93',
+    BarcodeFormat.code128: '• ASCII characters (letters, numbers, symbols)\n• Example: {Code128_Example}',
+    BarcodeFormat.itf: '• Even number of digits only\n• Example: 12345678',
+    BarcodeFormat.upcA: '• Must be 12 numeric digits\n• Example: 012345678905',
+    BarcodeFormat.upcE: '• Must be 6-8 numeric digits\n• Example: 01234565',
+    BarcodeFormat.codabar: '• Start/end with A-D, digits/symbols in between\n• Example: A12345B',
+    BarcodeFormat.pdf417: '• Can encode text, numbers, or binary data\n• Example: PDF417 Sample',
+    BarcodeFormat.aztec: '• Supports text, URLs, or binary data\n• Example: https://example.com',
+    BarcodeFormat.dataMatrix: '• Encodes text or binary data\n• Example: DataMatrix123',
+    BarcodeFormat.qrCode: '• Supports text, URLs, or other data types\n• Example: https://flutter.dev',
+  };
+
+  String? _validateContent(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Content is required';
+    }
+
+    final validator = _formatValidators[_selectedFormat];
+    final message = _validationMessages[_selectedFormat];
+
+    if (_selectedFormat == BarcodeFormat.itf && value.length.isOdd) {
+      return 'ITF requires even number of digits';
+    }
+
+    if (!validator!.hasMatch(value)) {
+      return message!.isNotEmpty ? message : 'Invalid format';
+    }
+
+    return null;
+  }
+
+  Widget _buildPreview() {
+    return Column(
+      children: [
+        SizedBox(height: AppSpacing.large),
+        Text(
+          'Preview',
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        SizedBox(height: AppSpacing.small),
+        Container(
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: Theme.of(context).colorScheme.surfaceVariant,
+            ),
+            borderRadius: BorderRadius.circular(AppSpacing.small),
+          ),
+          padding: EdgeInsets.all(AppSpacing.medium),
+          child: _contentController.text.isEmpty
+              ? Text(
+            'Enter content to see preview',
+            style: Theme.of(context).textTheme.bodyMedium,
+          )
+              : SizedBox(
+            width: 200,
+            height: 200,
+            child: FittedBox(
+              child: codePreview(
+                  _selectedFormat,
+                  _contentController.text,context
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _saveEntry() async {
+    if (_formKey.currentState!.validate()) {
+      final newEntry = ScannedResult(
+        title: _titleController.text,
+        data: _contentController.text,
+        format: _selectedFormat,
+        timestamp: DateTime.now(),
+      );
+
+      final databaseHelper = DatabaseHelper.instance;
+      final id = await databaseHelper.insertScannedResult(newEntry);
+      final savedEntry = newEntry.copyWith(id: id);
+
+      context.read<ScannedResultsCubit>().addResult(savedEntry);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Entry saved successfully',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Theme.of(context).colorScheme.onPrimaryContainer,
+            ),
+          ),
+          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+        ),
+      );
+
+      _clearForm();
+    }
+  }
+
+  void _clearForm() {
+    _formKey.currentState!.reset();
+    _titleController.clear();
+    _contentController.clear();
+    setState(() {
+      _selectedFormat = BarcodeFormat.qrCode;
+    });
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _contentController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Create New Entry'),
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.save,
+              color: Theme.of(context).colorScheme.onPrimary,
+            ),
+            onPressed: _saveEntry,
+          ),
+        ],
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(AppSpacing.medium),
+        child: Form(
+          key: _formKey,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
+          child: ListView(
+            children: [
+              TextFormField(
+                controller: _titleController,
+                decoration: InputDecoration(
+                  labelText: 'Title',
+                  prefixIcon: Icon(Icons.title),
+                ),
+                style: Theme.of(context).textTheme.bodyLarge,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a title';
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: AppSpacing.large),
+              DropdownButtonFormField<BarcodeFormat>(
+                value: _selectedFormat,
+                decoration: InputDecoration(
+                  labelText: 'Type',
+                  prefixIcon: Icon(Icons.type_specimen),
+                ),
+                items: _formatValidators.keys
+                    .map((format) => DropdownMenuItem(
+                  value: format,
+                  child: Text(
+                    format.name[0].toUpperCase() +
+                        format.name.substring(1),
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                ))
+                    .toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedFormat = value!;
+                  });
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    _formKey.currentState?.validate();
+                  });
+                },
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+              SizedBox(height: AppSpacing.large),
+              TextFormField(
+                controller: _contentController,
+                decoration: InputDecoration(
+                  labelText: 'Content',
+                  prefixIcon: Icon(Icons.text_snippet),
+                ),
+                style: Theme.of(context).textTheme.bodyLarge,
+                maxLines: 3,
+                validator: _validateContent,
+                onChanged: (value) => setState(() {}),
+              ),
+              SizedBox(height: AppSpacing.medium),
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.all(AppSpacing.medium),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(AppSpacing.small),
+                ),
+                child: Text(
+                  _formatInstructions[_selectedFormat]!,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+              _buildPreview(),
+              SizedBox(height: AppSpacing.large),
+              ElevatedButton(
+                onPressed: _saveEntry,
+                child: Text(
+                  'Save Entry',
+                  style: Theme.of(context).textTheme.labelLarge,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+#File: dashboard_screen.dart ============================================================
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'package:intl/intl.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:barqr_manager/app_theme.dart';
+import 'package:barqr_manager/scanned_results_cubit.dart';
+import 'package:barqr_manager/scanned_result.dart';
+import 'package:barqr_manager/saved_screen.dart';
+import 'package:barqr_manager/settings_screen.dart';
+
+class DashboardScreen extends StatelessWidget {
+  const DashboardScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Dashboard'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => SettingsScreen()),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () => context.read<ScannedResultsCubit>().fetchResults(),
+          ),
+        ],
+      ),
+      body: BlocBuilder<ScannedResultsCubit, ScannedResultsState>(
+        builder: (context, state) {
+          if (state.results.isEmpty) {
+            return _buildEmptyState(context);
+          }
+
+          final formatDistribution = _calculateFormatDistribution(state.results);
+          final chartData = _prepareChartData(formatDistribution, context);
+
+          return RefreshIndicator(
+            onRefresh: () => context.read<ScannedResultsCubit>().fetchResults(),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _buildMetricsGrid(state.results, formatDistribution, context),
+                        const SizedBox(height: 16),
+                        _buildFormatChart(chartData, context),
+                        const SizedBox(height: 16),
+                        _buildRecentActivity(state.results, context),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.analytics_outlined,
+              size: 100,
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5)),
+          SizedBox(height: AppSpacing.large),
+          Text(
+            'No scans yet!',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
+          Text(
+            'Start scanning or creating codes to see statistics',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMetricsGrid(
+      List<ScannedResult> results,
+      Map<BarcodeFormat, int> distribution,
+      BuildContext context
+      ) {
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.38,
+      ),
+      child: GridView.count(
+        crossAxisCount: 2,
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        childAspectRatio: 1.1, // Adjusted from 1.2
+        mainAxisSpacing: 8,    // Reduced from 12
+        crossAxisSpacing: 8,   // Reduced from 12
+        padding: const EdgeInsets.only(bottom: 16),
+        children: [
+          _MetricCard(
+            title: 'Total Scans',
+            value: results.length.toString(),
+            icon: Icons.scanner,
+            color: Theme.of(context).colorScheme.primaryContainer,
+          ),
+          _MetricCard(
+            title: 'Formats Used',
+            value: distribution.keys.length.toString(),
+            icon: Icons.format_list_bulleted,
+            color: Theme.of(context).colorScheme.secondaryContainer,
+          ),
+          _MetricCard(
+            title: '7-Day Activity',
+            value: _scansLast7Days(results).toString(),
+            icon: Icons.timeline,
+            color: Theme.of(context).colorScheme.tertiaryContainer,
+          ),
+          _MetricCard(
+            title: 'Most Common',
+            value: _getMostUsedFormat(distribution),
+            icon: Icons.star,
+            color: Theme.of(context).colorScheme.errorContainer,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFormatChart(List<PieChartSectionData> chartData, BuildContext context) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Format Distribution',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+                Icon(
+                  Icons.pie_chart_outline,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            AspectRatio(
+              aspectRatio: 1.7,
+              child: PieChart(
+                PieChartData(
+                  sections: chartData,
+                  centerSpaceRadius: 42,
+                  sectionsSpace: 4,
+                  startDegreeOffset: 180,
+                  borderData: FlBorderData(show: false),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            _buildChartLegend(chartData, context),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildChartLegend(List<PieChartSectionData> chartData, BuildContext context) {
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      children: chartData.map((section) {
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 12,
+              height: 12,
+              decoration: BoxDecoration(
+                color: section.color,
+                shape: BoxShape.circle,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              section.title,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+          ],
+        );
+      }).toList(),
+    );
+  }
+  Widget _buildRecentActivity(List<ScannedResult> results, BuildContext context) {
+    final recentScans = results.take(3).toList();
+
+    return Card(
+
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Recent Activity',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                IconButton(
+                  icon: const Icon(Icons.arrow_forward),
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => SavedScreen()),
+                  ),
+                ),
+              ],
+            ),
+            ...recentScans.map((scan) => _ActivityItem(
+              result: scan,
+              onTap: () => _showDetails(context, scan),
+            )),
+            if (recentScans.isEmpty)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 16),
+                child: Text('No recent activity'),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showDetails(BuildContext context, ScannedResult result) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(result.title),
+
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+
+          children: [
+            Text('Type: ${_formatName(result.format.name)}'),
+            Text('Date: ${DateFormat.yMd().add_jm().format(result.timestamp)}'),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.surfaceVariant,
+                ),
+                borderRadius: BorderRadius.circular(AppSpacing.small),
+              ),
+              child: Text(result.data),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Helper methods
+  List<PieChartSectionData> _prepareChartData(
+      Map<BarcodeFormat, int> distribution,
+      BuildContext context
+      ) {
+    final colors = [
+      Theme.of(context).colorScheme.primary,
+      Theme.of(context).colorScheme.secondary,
+      Theme.of(context).colorScheme.tertiary,
+      Theme.of(context).colorScheme.error,
+      Theme.of(context).colorScheme.primaryContainer,
+      Theme.of(context).colorScheme.secondaryContainer,
+    ];
+
+    return distribution.entries.map((entry) {
+      final index = distribution.keys.toList().indexOf(entry.key);
+      return PieChartSectionData(
+        color: colors[index % colors.length],
+        value: entry.value.toDouble(),
+        title: '${_formatName(entry.key.name)}\n${entry.value}',
+        radius: 28,
+        titleStyle: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+          color: Theme.of(context).colorScheme.onPrimary,
+        ),
+      );
+    }).toList();
+  }
+
+
+  static String _formatName(String format) =>
+      format[0].toUpperCase() + format.substring(1);
+
+  static Map<BarcodeFormat, int> _calculateFormatDistribution(List<ScannedResult> results) {
+    final Map<BarcodeFormat, int> distribution = {};
+    for (final result in results) {
+      distribution[result.format] = (distribution[result.format] ?? 0) + 1;
+    }
+    return distribution;
+  }
+
+  static String _getMostUsedFormat(Map<BarcodeFormat, int> distribution) {
+    if (distribution.isEmpty) return '-';
+    final sorted = distribution.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    return _formatName(sorted.first.key.name); // Now calling static method
+  }
+
+  static int _scansLast7Days(List<ScannedResult> results) {
+    final weekAgo = DateTime.now().subtract(const Duration(days: 7));
+    return results.where((r) => r.timestamp.isAfter(weekAgo)).length;
+  }
+}
+class _MetricCard extends StatelessWidget {
+  final String title;
+  final String value;
+  final IconData icon;
+  final Color color;
+
+  const _MetricCard({
+    required this.title,
+    required this.value,
+    required this.icon,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Flexible(
+              child: Container(
+                padding: EdgeInsets.all(AppSpacing.small),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, size: 24, color: color),
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    value,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      color: color,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Expanded(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  title,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+class _ActivityItem extends StatelessWidget {
+  final ScannedResult result;
+  final VoidCallback onTap;
+
+  const _ActivityItem({
+    required this.result,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(vertical: 8),
+      leading: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: Theme.of(context).primaryColor.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(_formatIcon(result.format), color: Theme.of(context).primaryColor),
+      ),
+      title: Text(
+        result.title,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: const TextStyle(fontWeight: FontWeight.w500),
+      ),
+      subtitle: Text(
+        DateFormat.MMMd().add_jm().format(result.timestamp),
+        style: TextStyle(color: Colors.grey[600]),
+      ),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: onTap,
+    );
+  }
+
+  IconData _formatIcon(BarcodeFormat format) {
+    switch (format) {
+      case BarcodeFormat.qrCode:
+        return Icons.qr_code;
+      case BarcodeFormat.ean13:
+      case BarcodeFormat.ean8:
+        return Icons.barcode_reader;
+      case BarcodeFormat.code128:
+        return Icons.view_week;
+      case BarcodeFormat.dataMatrix:
+        return Icons.grid_on;
+      default:
+        return Icons.tag;
+    }
+  }
+}
+#File: database_helper.dart ============================================================
+import 'dart:async';
+import 'package:sqflite/sqflite.dart';
+import 'package:barqr_manager/scanned_result.dart';
+import 'package:intl/intl.dart';
+
+class DatabaseHelper {
+  static final DatabaseHelper instance = DatabaseHelper._internal();
+  static Database? _database;
+
+  DatabaseHelper._internal();
+
+  Future<Database> get database async {
+    if (_database != null) return _database!;
+    _database = await _initDatabase();
+    return _database!;
+  }
+  Future<void> bulkInsert(List<ScannedResult> results) async {
+    final db = await database;
+    final batch = db.batch();
+
+    for (final result in results) {
+      batch.insert(
+        'scanned_results',
+        result.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+
+    await batch.commit();
+  }
+  Future<Database> _initDatabase() async {
+    String path = await getDatabasesPath() + 'scanned_results.db';
+    return await openDatabase(
+      path,
+      version: 3,
+      onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
+    );
+  }
+
+  void _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute('ALTER TABLE scanned_results ADD COLUMN format TEXT DEFAULT \'\'');
+    }
+    if (oldVersion < 3) {
+      await db.execute('ALTER TABLE scanned_results ADD COLUMN title TEXT DEFAULT \'\'');
+    }
+  }
+
+  void _onCreate(Database db, int version) async {
+    await db.execute('''
+      CREATE TABLE scanned_results (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        data TEXT NOT NULL,
+        format TEXT NOT NULL,
+        timestamp TEXT NOT NULL
+      )
+    ''');
+  }
+
+  Future<void> deleteScannedResult(int id) async {
+    Database db = await database;
+    await db.delete(
+      'scanned_results',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<int> insertScannedResult(ScannedResult result) async {
+    Database db = await database;
+    return await db.insert(
+      'scanned_results',
+      result.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<List<ScannedResult>> getScannedResults() async {
+    Database db = await database;
+    List<Map<String, dynamic>> maps = await db.query(
+      'scanned_results',
+      orderBy: 'timestamp DESC',  // New: Order by timestamp descending
+    );
+    return List.generate(maps.length, (i) {
+      return ScannedResult.fromMap(maps[i]);
+    });
+  }
+
+  // New: Add bulk delete functionality
+  Future<int> deleteAllResults() async {
+    Database db = await database;
+    return await db.delete('scanned_results');
+  }
+
+  // New: Add search functionality
+  Future<List<ScannedResult>> searchResults(String query) async {
+    Database db = await database;
+    List<Map<String, dynamic>> maps = await db.query(
+      'scanned_results',
+      where: 'title LIKE ? OR data LIKE ?',
+      whereArgs: ['%$query%', '%$query%'],
+    );
+    return List.generate(maps.length, (i) => ScannedResult.fromMap(maps[i]));
+  }
+}
+#File: main.dart ============================================================
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:barqr_manager/navigation_cubit.dart';
+import 'app_theme.dart';
+import 'scanned_results_cubit.dart';
+import 'my_home_page.dart';
+import 'theme_cubit.dart';  // Now imported from separate file
+
+void main() {
+  runApp(
+    MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => ScannedResultsCubit()),
+        BlocProvider(create: (_) => ThemeCubit()),
+        BlocProvider(create: (_) => NavigationCubit()),
+      ],
+      child: const MyApp(),
+    ),
+  );
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<ThemeCubit, ThemeData>(
+      builder: (context, theme) {
+        return MaterialApp(
+          title: 'BarQR Manager',
+          theme: theme,
+          debugShowCheckedModeBanner: false,
+          home:  MyHomePage(),
+          // Remove darkTheme property as it's now handled by ThemeCubit
+        );
+      },
+    );
+  }
+}
+
+#File: my_home_page.dart ============================================================
+// my_home_page.dart
+import 'package:flutter/material.dart';
+import 'dashboard_screen.dart';
+import 'saved_screen.dart';
+import 'scan_screen.dart';
+import 'create_screen.dart';
+import 'app_theme.dart';
+
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  int _currentIndex = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('BarQR Manager'),
+      ),
+      body: _buildCurrentScreen(),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (index) => setState(() => _currentIndex = index),
+        elevation: 2,
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: colorScheme.surface,
+        selectedItemColor: colorScheme.primary,
+        unselectedItemColor: colorScheme.onSurfaceVariant.withOpacity(0.6),
+        selectedLabelStyle: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          height: 1.5,
+        ),
+        unselectedLabelStyle: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+          height: 1.5,
+        ),
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.dashboard_outlined),
+            activeIcon: Icon(Icons.dashboard),
+            label: 'Dashboard',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.create_outlined),
+            activeIcon: Icon(Icons.create),
+            label: 'Create',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.scanner_outlined),
+            activeIcon: Icon(Icons.scanner),
+            label: 'Scan',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.save_outlined),
+            activeIcon: Icon(Icons.save),
+            label: 'Saved',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCurrentScreen() {
+    switch (_currentIndex) {
+      case 0:
+        return DashboardScreen();
+      case 1:
+        return CreateScreen();
+      case 2:
+        return ScanScreen();
+      case 3:
+        return SavedScreen();
+      default:
+        return DashboardScreen();
+    }
+  }
+}
+#File: navigation_cubit.dart ============================================================
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+class NavigationCubit extends Cubit<int> {
+  NavigationCubit() : super(0);
+
+  void updateIndex(int index) => emit(index);
+}
+#File: saved_screen.dart ============================================================
+import 'dart:ui';
+import 'package:file_selector/file_selector.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:screenshot/screenshot.dart';
+import 'package:barqr_manager/app_theme.dart';
+import 'package:barqr_manager/scanned_results_cubit.dart';
+import 'package:barqr_manager/scanned_result.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:barcode_widget/barcode_widget.dart' as bw;
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+import 'package:flutter/services.dart';
+import 'package:barqr_manager/settings_repository.dart';
+import 'package:path/path.dart' as path;
+import 'package:url_launcher/url_launcher.dart';
+
+class SavedScreen extends StatelessWidget {
+  final ScreenshotController screenshotController = ScreenshotController();
+  final SettingsRepository _settingsRepo = SettingsRepository();
+
+  Future<Uint8List?> _generateBarcodeImage(
+      BuildContext context, ScannedResult result) async {
+    try {
+      // Use ScreenshotController's captureFromWidget method.
+      // You can adjust the delay and pixelRatio as needed.
+      final Uint8List imageBytes = await screenshotController.captureFromWidget(
+        Material(
+          child: bw.BarcodeWidget(
+            barcode: _getBarcodeType(result.format),
+            data: result.data,
+            width: 300,
+            height: 150,
+            drawText: false,
+          ),
+        ),
+        pixelRatio: 3.0,
+        delay: Duration(milliseconds: 200),
+      );
+      return imageBytes;
+    } catch (e) {
+      print("Error generating barcode image: $e");
+      return null;
+    }
+  }
+
+  Future<bool> requestManageExternalStoragePermission() async {
+    final status = await Permission.manageExternalStorage.request();
+    return status.isGranted;
+  }
+
+  Future<Directory> getDefaultSaveDirectory() async {
+    final settingsRepo = SettingsRepository();
+    final mode = await settingsRepo.getSaveLocation();
+    if (mode == 'internal') {
+      // Write to shared storage (requires proper permissions, e.g. MANAGE_EXTERNAL_STORAGE on Android 11+)
+      return Directory('/storage/emulated/0/BarQR Manager');
+    } else if (mode == 'app') {
+      return await getApplicationDocumentsDirectory();
+    } else if (mode == 'custom') {
+      final customPath = await settingsRepo.getCustomSavePath();
+      if (customPath != null && customPath.isNotEmpty) {
+        return Directory(customPath);
+      }
+      // Fallback to internal if custom path not set.
+      return Directory('/storage/emulated/0/BarQR Manager');
+    }
+    // Fallback
+    return Directory('/storage/emulated/0/BarQR Manager');
+  }
+
+  Future<void> _exportResult(BuildContext context, ScannedResult result) async {
+    try {
+      // Request all-files permission.
+      if (!await requestManageExternalStoragePermission()) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Manage storage permission not granted')),
+        );
+        return;
+      }
+
+      // Ask the user whether to use default or custom path.
+      final bool? useDefaultPath = await showDialog<bool>(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text("Select Save Location"),
+            content: Text(
+                "Save using the default location or choose a custom path?"),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: Text("Default Path"),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text("Select Manually"),
+              ),
+            ],
+          );
+        },
+      );
+      if (useDefaultPath == null) return; // User canceled
+
+      // Generate barcode (or QR code) image.
+      final image = await _generateBarcodeImage(context, result);
+      if (image == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to generate image')),
+        );
+        return;
+      }
+
+      // Directory dir=Directory('/storage/emulated/0/BarQR Manager');
+
+      Directory dir = await getDefaultSaveDirectory();
+      if (!await dir.exists()) await dir.create(recursive: true);
+
+      if (useDefaultPath) {
+        Directory dir = Directory('/storage/emulated/0/BarQR Manager');
+        if (!await dir.exists()) await dir.create(recursive: true);
+      } else {
+        // Use a file picker to select a directory (e.g. via file_selector package).
+        final String? selectedDir =
+            await getDirectoryPath(); // Ensure you import and configure file_selector
+        if (selectedDir == null) return;
+        dir = Directory(selectedDir);
+      }
+
+      if (!await dir.exists()) await dir.create(recursive: true);
+
+      final filename =
+          '${result.title}_${result.timestamp.millisecondsSinceEpoch}.png';
+      final file = File(path.join(dir.path, filename));
+      await file.writeAsBytes(image);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Saved to ${dir.path}')),
+      );
+    } catch (e) {
+      print('Export error: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Export failed: $e')),
+      );
+    }
+  }
+
+// Capture widget as an image
+  Future<Uint8List?> _captureWidgetAsImage(GlobalKey repaintBoundaryKey) async {
+    try {
+      final boundary = repaintBoundaryKey.currentContext?.findRenderObject()
+          as RenderRepaintBoundary?;
+      if (boundary == null) return null;
+
+      final image = await boundary.toImage();
+      final byteData = await image.toByteData(format: ImageByteFormat.png);
+      return byteData?.buffer.asUint8List();
+    } catch (e) {
+      print('Error capturing widget as image: $e');
+      return null;
+    }
+  }
+
+  bw.Barcode _getBarcodeType(BarcodeFormat format) {
+    switch (format) {
+      case BarcodeFormat.code128:
+        return bw.Barcode.code128();
+      case BarcodeFormat.code39:
+        return bw.Barcode.code39();
+      case BarcodeFormat.qrCode:
+        return bw.Barcode.qrCode(); // Added for QR codes
+      default:
+        return bw.Barcode.qrCode(); // Default to QR if unknown
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Saved Results'),
+      ),
+      body: BlocBuilder<ScannedResultsCubit, ScannedResultsState>(
+        builder: (context, state) {
+          if (state.results.isEmpty) {
+            return Center(child: Text('No results saved yet.'));
+          } else {
+            return Screenshot(
+              controller: screenshotController,
+              child: ListView.builder(
+                itemCount: state.results.length,
+                itemBuilder: (context, index) {
+                  ScannedResult result = state.results[index];
+                  return ListTile(
+                    contentPadding:
+                        EdgeInsets.symmetric(vertical: AppSpacing.medium),
+                    title: Text(result.title),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Type: ${_formatTypeName(result.format.name)}'),
+                        Text(
+                            'Date: ${DateFormat('dd/MM/yyyy').format(result.timestamp)}'),
+                        Text(
+                            'Time: ${DateFormat('hh:mm a').format(result.timestamp)}'),
+                        SizedBox(height: 8),
+                        InkWell(
+                          onTap: () async {
+                            final uri = Uri.tryParse(result.data);
+                            // Check if the content is a valid HTTP or HTTPS URL.
+                            if (uri != null &&
+                                uri.hasScheme &&
+                                (uri.scheme == 'http' ||
+                                    uri.scheme == 'https')) {
+                              if (await canLaunchUrl(uri)) {
+                                await launchUrl(uri);
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                      content:
+                                          Text('Could not launch the URL')),
+                                );
+                              }
+                            }
+                          },
+                          onLongPress: () {
+                            Clipboard.setData(ClipboardData(text: result.data));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                  content: Text('Content copied to clipboard')),
+                            );
+                          },
+                          child: Text(
+                            'Content: ${result.data}',
+                            style: TextStyle(
+                              // Optionally underline and color the text if it looks like a link.
+                              decoration:
+                                  (Uri.tryParse(result.data)?.hasScheme ??
+                                          false)
+                                      ? TextDecoration.underline
+                                      : null,
+                              color: (Uri.tryParse(result.data)?.hasScheme ??
+                                      false)
+                                  ? Colors.blue
+                                  : Colors.black,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    leading: Container(
+                      width: 100,
+                      child: FittedBox(
+                        child: QrImageView(
+                          data: result.data,
+                          version: QrVersions.auto,
+                          size: 100,
+                        ),
+                      ),
+                    ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.download),
+                          onPressed: () => _exportResult(context, result),
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.delete),
+                          onPressed: () {
+                            if (result.id != null) {
+                              context
+                                  .read<ScannedResultsCubit>()
+                                  .deleteResult(result.id!);
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            );
+          }
+        },
+      ),
+    );
+  }
+}
+
+String _formatTypeName(String type) {
+  return type[0].toUpperCase() + type.substring(1);
+}
+
+#File: scan_screen.dart ============================================================
+import 'dart:async';
+import 'package:flutter/material.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:barqr_manager/app_theme.dart';
+import 'package:barqr_manager/code_preview.dart';
+import 'package:barqr_manager/scanned_result.dart';
+import 'package:barqr_manager/scanned_results_cubit.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:barcode_widget/barcode_widget.dart' as bw;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:vibration/vibration.dart';
+import 'database_helper.dart';
+
+class ScanScreen extends StatefulWidget {
+  @override
+  _ScanScreenState createState() => _ScanScreenState();
+}
+
+class _ScanScreenState extends State<ScanScreen> {
+  MobileScannerController controller = MobileScannerController(
+    formats: [BarcodeFormat.qrCode, BarcodeFormat.ean13],
+  );
+  bool _isDialogOpen = false;
+
+  Future<void> _initializeFlash() async {
+    await context.read<ScannedResultsCubit>().loadFlashState();
+    final shouldEnable = context.read<ScannedResultsCubit>().state.autoFlashEnabled;
+    if (shouldEnable && controller.torchState.value != TorchState.on) {
+      controller.toggleTorch();
+    }
+  }
+
+  void _handleTorchStateChange() {
+    setState(() {});
+  }
+
+  Future<void> _updateFlashState(bool value) async {
+    context.read<ScannedResultsCubit>().updateFlashState(value);
+    if (value) {
+      await controller.toggleTorch();
+    } else {
+      await controller.toggleTorch();
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeFlash();
+    controller.torchState.addListener(_handleTorchStateChange);
+    _requestCameraPermission();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ScannedResultsCubit>().loadFlashState().then((_) {
+        if (context.read<ScannedResultsCubit>().state.autoFlashEnabled) {
+          Timer(Duration(milliseconds: 100), () => controller.toggleTorch());
+        }
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    if (controller.torchState.value == TorchState.on) {
+      controller.toggleTorch();
+    }
+    controller.stop();
+    controller.torchState.removeListener(_handleTorchStateChange);
+    controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _requestCameraPermission() async {
+    var status = await Permission.camera.status;
+    if (status.isDenied) {
+      await Permission.camera.request();
+    }
+  }
+
+  Future<void> _showResultPopup(
+      String result, BarcodeFormat format, BuildContext context) async {
+    final titleController = TextEditingController();
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Scanned Result'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: titleController,
+                decoration: InputDecoration(
+                  labelText: 'Enter Title',
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.all(AppSpacing.small),
+                ),
+              ),
+              SizedBox(height: AppSpacing.medium),
+              Container(
+                width: AppSpacing.previewWidth,
+                height: AppSpacing.previewHeight,
+                child: FittedBox(child: codePreview(format, result, context)),
+              ),
+              SizedBox(height: AppSpacing.medium),
+              Text(result, style: Theme.of(context).textTheme.titleMedium),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                if (titleController.text.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Please enter a title')),
+                  );
+                  return;
+                }
+
+                DateTime now = DateTime.now();
+                ScannedResult scannedResult = ScannedResult(
+                  title: titleController.text,
+                  data: result,
+                  format: format,
+                  timestamp: now,
+                );
+
+                int id = await DatabaseHelper.instance
+                    .insertScannedResult(scannedResult);
+                scannedResult = scannedResult.copyWith(id: id);
+                context.read<ScannedResultsCubit>().addResult(scannedResult);
+                Navigator.pop(context);
+              },
+              child: Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Scan QR Code'),
+        actions: [
+          BlocBuilder<ScannedResultsCubit, ScannedResultsState>(
+            builder: (context, state) {
+              return IconButton(
+                icon: Icon(state.autoFlashEnabled ? Icons.flash_on : Icons.flash_off),
+                onPressed: () => _updateFlashState(!state.autoFlashEnabled),
+              );
+            },
+          ),
+        ],
+      ),
+      body: MobileScanner(
+        controller: controller,
+        onDetect: (BarcodeCapture barcode) async {
+          if (_isDialogOpen) return;
+
+          final barcodeData = barcode.barcodes.first.rawValue;
+          final barcodeFormat = barcode.barcodes.first.format;
+          final prefs = await SharedPreferences.getInstance();
+          final vibrate = prefs.getBool('vibrate_feedback') ?? false;
+
+          if (barcodeData != null) {
+            _isDialogOpen = true;
+            controller.stop();
+
+            await _showResultPopup(barcodeData, barcodeFormat, context);
+
+            controller.start();
+            _isDialogOpen = false;
+          }
+
+          if (vibrate && (await Vibration.hasVibrator() ?? false)) {
+            Vibration.vibrate(duration: 200);
+          }
+        },
+      ),
+    );
+  }
+}
+#File: scanned_result.dart ============================================================
+import 'package:equatable/equatable.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
+// scanned_result.dart
+class ScannedResult extends Equatable {
+  final int? id;
+  final String title; // Add title field
+  final String data;
+  final BarcodeFormat format;
+  final DateTime timestamp;
+
+  ScannedResult({
+    this.id,
+    required this.title, // Add to constructor
+    required this.data,
+    required this.format,
+    required this.timestamp,
+  });
+
+  // Update copyWith
+  ScannedResult copyWith({
+    int? id,
+    String? title,
+    String? data,
+    BarcodeFormat? format,
+    DateTime? timestamp,
+  }) {
+    return ScannedResult(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      data: data ?? this.data,
+      format: format ?? this.format,
+      timestamp: timestamp ?? this.timestamp,
+    );
+  }
+
+  // Update toMap
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'title': title, // Add title
+      'data': data,
+      'format': format.name,
+      'timestamp': timestamp.toIso8601String(),
+    };
+  }
+
+  factory ScannedResult.fromMap(Map<String, dynamic> map) {
+    try {
+      return ScannedResult(
+        id: map['id'],
+        title: map['title'] ?? 'Untitled',
+        data: map['data'],
+        format: BarcodeFormat.values.firstWhere(
+              (e) => e.name == map['format'],
+          orElse: () => BarcodeFormat.qrCode,
+        ),
+        timestamp: DateTime.parse(map['timestamp']),
+      );
+    } catch (e) {
+      print('Error parsing scanned result: $e');
+      return ScannedResult(
+        title: 'Invalid Entry',
+        data: 'Corrupted data',
+        format: BarcodeFormat.qrCode,
+        timestamp: DateTime.now(),
+      );
+    }
+  }
+  @override
+  List<Object?> get props => [id, title, data, format, timestamp];
+}
+#File: scanned_results_cubit.dart ============================================================
+// scanned_results_cubit.dart
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:equatable/equatable.dart';
+import 'package:barqr_manager/scanned_result.dart';
+import 'package:barqr_manager/database_helper.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+part 'scanned_results_state.dart';
+
+class ScannedResultsCubit extends Cubit<ScannedResultsState> {
+  ScannedResultsCubit() : super(const ScannedResultsState(results: [])) {
+    fetchResults();
+    loadFlashState();
+  }
+  Future<void> loadFlashState() async {
+    final prefs = await SharedPreferences.getInstance();
+    final flashState = prefs.getBool('auto_flash') ?? false;
+    emit(state.copyWith(autoFlashEnabled: flashState));
+  }
+
+
+  Future<void> updateFlashState(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('auto_flash', value);
+    emit(state.copyWith(autoFlashEnabled: value));
+  }
+
+  Future<void> fetchResults() async {
+    List<ScannedResult> results = await DatabaseHelper.instance.getScannedResults();
+    emit(ScannedResultsState(results: results));
+  }
+
+  Future<void> addResult(ScannedResult result) async {
+    await DatabaseHelper.instance.insertScannedResult(result);
+    List<ScannedResult> currentResults = state.results;
+    List<ScannedResult> newResults = List.from(currentResults)..add(result);
+    emit(ScannedResultsState(results: newResults));
+  }
+
+  Future<void> deleteResult(int id) async {
+    await DatabaseHelper.instance.deleteScannedResult(id);
+    List<ScannedResult> currentResults = state.results;
+    List<ScannedResult> newResults = currentResults.where((result) => result.id != id).toList();
+    emit(ScannedResultsState(results: newResults));
+  }
+
+  Future<void> deleteAllResults() async {
+    final db = await DatabaseHelper.instance.database;
+    await db.delete('scanned_results');
+    emit(const ScannedResultsState(results: []));
+  }
+}
+#File: scanned_results_state.dart ============================================================
+part of 'scanned_results_cubit.dart';
+
+class ScannedResultsState extends Equatable {
+  final List<ScannedResult> results;
+  final bool autoFlashEnabled;
+
+  const ScannedResultsState({
+    required this.results,
+    this.autoFlashEnabled = false,
+  });
+
+  ScannedResultsState copyWith({
+    List<ScannedResult>? results,
+    bool? autoFlashEnabled,
+  }) {
+    return ScannedResultsState(
+      results: results ?? this.results,
+      autoFlashEnabled: autoFlashEnabled ?? this.autoFlashEnabled,
+    );
+  }
+
+  @override
+  List<Object?> get props => [results, autoFlashEnabled];
+}
+#File: settings_repository.dart ============================================================
+import 'package:shared_preferences/shared_preferences.dart';
+
+class SettingsRepository {
+  static const _storageKey = 'save_location';
+  static const _customPathKey = 'custom_save_path';
+
+  Future<String> getSaveLocation() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_storageKey) ?? 'internal';
+  }
+
+  Future<void> setSaveLocation(String value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_storageKey, value);
+  }
+
+  Future<String?> getCustomSavePath() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_customPathKey);
+  }
+
+  Future<void> setCustomSavePath(String path) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_customPathKey, path);
+  }
+}
+
+#File: settings_screen.dart ============================================================
+import 'package:package_info_plus/package_info_plus.dart';
+import 'dart:convert';
+import 'dart:typed_data';
+import 'package:barqr_manager/settings_repository.dart';
+import 'package:csv/csv.dart';
+import 'package:file_selector/file_selector.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:barqr_manager/barcode_format_utils.dart';
+import 'package:barqr_manager/scanned_result.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'app_theme.dart';
+import 'database_helper.dart';
+import 'scanned_results_cubit.dart';
+import 'theme_cubit.dart';
+
+class SettingsScreen extends StatelessWidget {
+  const SettingsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Settings'),
+      ),
+      body: ListView(
+        padding: EdgeInsets.all(AppSpacing.medium),
+        children: [
+          _ScanningSection(),
+          SizedBox(height: AppSpacing.large),
+          _AppearanceSection(),
+          SizedBox(height: AppSpacing.large),
+          _DataSection(),
+          SizedBox(height: AppSpacing.large),
+          _PermissionsSection(),
+          SizedBox(height: AppSpacing.large),
+          _AboutSection(),
+          // TODO the export tile refactore later
+          SizedBox(height: AppSpacing.large),
+
+        ],
+      ),
+    );
+  }
+}
+
+class _ScanningSection extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return _SettingsSection(
+      title: 'Scanning',
+      icon: Icons.qr_code_scanner,
+      children: [
+        _SwitchSetting(
+          title: 'Auto-enable flash',
+          prefKey: 'auto_flash',
+          icon: Icons.flashlight_on,
+          initialValue: context.watch<ScannedResultsCubit>().state.autoFlashEnabled,
+          onChanged: (value) => context.read<ScannedResultsCubit>().updateFlashState(value),
+        ),
+        _SwitchSetting(
+          title: 'Vibrate on success',
+          prefKey: 'vibrate_feedback',
+          icon: Icons.vibration,
+          onChanged: (value) async {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setBool('vibrate_feedback', value);
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _AppearanceSection extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return _SettingsSection(
+      title: 'Appearance',
+      icon: Icons.palette,
+      children: [
+        BlocBuilder<ThemeCubit, ThemeData>(
+          builder: (context, theme) {
+            return _SwitchSetting(
+              title: 'Dark mode',
+              prefKey: 'dark_mode',
+              icon: Icons.dark_mode,
+              initialValue: theme.brightness == Brightness.dark,
+              onChanged: (value) {
+                context.read<ThemeCubit>().toggleTheme(darkMode: value);
+                print('-----------------testing--------------------------');
+              },
+            );
+          },
+        ),
+        BlocBuilder<ThemeCubit, ThemeData>(
+          builder: (context, theme) {
+            return ListTile(
+              leading: Icon(Icons.color_lens, color: AppColors.info),
+              title: Text('Accent color'),
+              trailing: Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              onTap: () => _showColorPicker(context),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  void _showColorPicker(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Choose accent color'),
+        content: Wrap(
+          spacing: AppSpacing.medium,
+          runSpacing: AppSpacing.medium,
+          children: AppColors.primaries.map((color) =>
+              _ColorCircle(
+                color: color,
+                isSelected: color == Theme.of(context).colorScheme.primary,
+                onSelected: () => context.read<ThemeCubit>().toggleTheme(primaryColor: color),
+              )
+          ).toList(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: Navigator.of(context).pop,
+            child: Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DataSection extends StatelessWidget {
+
+  @override
+  Widget build(BuildContext context) {
+    return _SettingsSection(
+      title: 'Data',
+      icon: Icons.storage,
+      children: [
+        ListTile(
+          leading: Icon(Icons.folder, color: AppColors.info),
+          title: Text('Save Location'),
+          subtitle: FutureBuilder<Map<String, String>>(
+            future: Future.wait([
+              SettingsRepository().getSaveLocation(), // returns mode: 'internal', 'app', or 'custom'
+              SettingsRepository().getCustomSavePath(),
+            ]).then((values) => {
+              'mode': values[0]!,
+              'customPath': values[1] ?? '',
+            }),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) return Text('Loading...');
+              final mode = snapshot.data!['mode']!;
+              if (mode == 'internal') {
+                return Text('Internal Storage/BarQR Manager');
+              } else if (mode == 'app') {
+                return Text('App Documents');
+              } else if (mode == 'custom') {
+                final customPath = snapshot.data!['customPath']!;
+                return Text(customPath.isNotEmpty ? customPath : 'Custom Path not set');
+              }
+              return Text('Unknown');
+            },
+          ),
+          trailing: FutureBuilder<String>(
+            future: SettingsRepository().getSaveLocation(),
+            builder: (context, snapshot) {
+              final currentMode = snapshot.data ?? 'internal';
+              return DropdownButton<String>(
+                value: currentMode,
+                items: [
+                  DropdownMenuItem(
+                    value: 'internal',
+                    child: Text('Internal Storage'),
+                  ),
+                  DropdownMenuItem(
+                    value: 'app',
+                    child: Text('App Documents'),
+                  ),
+                  DropdownMenuItem(
+                    value: 'custom',
+                    child: Text('Custom Path'),
+                  ),
+                ],
+                onChanged: (value) async {
+                  if (value != null) {
+                    if (value == 'custom') {
+                      // Let the user select a custom directory.
+                      final String? selectedPath = await getDirectoryPath();
+                      if (selectedPath != null && selectedPath.isNotEmpty) {
+                        await SettingsRepository().setCustomSavePath(selectedPath);
+                        await SettingsRepository().setSaveLocation('custom');
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Custom save path updated')),
+                        );
+                      }
+                    } else {
+                      await SettingsRepository().setSaveLocation(value);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Save location updated')),
+                      );
+                    }
+                    context.read<ScannedResultsCubit>().fetchResults();
+                  }
+                },
+              );
+            },
+          ),
+        ),
+
+        ListTile(
+          leading: Icon(Icons.import_export, color: AppColors.info),
+          title: Text('Export history'),
+          onTap: () => _exportData(context),
+        ),
+        ListTile(
+          leading: Icon(Icons.upload, color: AppColors.info),
+          title: Text('Import history'),
+          onTap: () => _importData(context),
+        ),
+        ListTile(
+          leading: Icon(Icons.delete, color: AppColors.error),
+          title: Text('Clear all data'),
+          onTap: () => _confirmClearData(context),
+        ),
+      ],
+    );
+  }
+
+
+  Future<void> _importData(BuildContext context) async {
+    try {
+      const XTypeGroup csvType = XTypeGroup(
+        label: 'CSV',
+        extensions: ['csv'],
+        mimeTypes: ['text/csv'],
+      );
+
+      final XFile? file = await openFile(
+        acceptedTypeGroups: [csvType],
+      );
+
+      if (file == null) return;
+
+      final Uint8List fileBytes = await file.readAsBytes();
+      final String csvContent = utf8.decode(fileBytes);
+      final List<List<dynamic>> rows = const CsvToListConverter().convert(csvContent);
+
+      if (rows.isEmpty || !_validateCsvHeader(rows[0])) {
+        throw FormatException('Invalid CSV format. Required columns: Title, Content, Format, Timestamp');
+      }
+
+      final List<ScannedResult> validEntries = [];
+      final database = DatabaseHelper.instance;
+
+      for (var row in rows.skip(1)) {
+        try {
+          final entry = ScannedResult(
+            title: row[0].toString(),
+            data: row[1].toString(),
+            format: BarcodeFormatUtils.fromImportString(row[2].toString()),
+            timestamp: _parseTimestamp(row[3].toString()),
+          );
+          validEntries.add(entry);
+        } catch (e) {
+          print('Skipping invalid row: ${row.join(',')} - Error: $e');
+        }
+      }
+
+      await database.bulkInsert(validEntries);
+      context.read<ScannedResultsCubit>().fetchResults();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Imported ${validEntries.length} valid entries'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } on FormatException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Import failed: ${e.message}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Import failed: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  bool _validateCsvHeader(List<dynamic> header) {
+    final expected = ['title', 'content', 'format', 'timestamp'];
+    final received = header.map((h) => h.toString().toLowerCase()).toList();
+    return received.length == expected.length &&
+        received.every((h) => expected.contains(h));
+  }
+
+  DateTime _parseTimestamp(String timestamp) {
+    try {
+      return DateFormat('yyyy-MM-dd HH:mm').parse(timestamp);
+    } catch (e) {
+      throw FormatException('Invalid timestamp format: $timestamp');
+    }
+  }
+
+  Future<void> _exportData(BuildContext context) async {
+    final results = await DatabaseHelper.instance.getScannedResults();
+    final csvRows = [
+      ['Title', 'Content', 'Format', 'Timestamp'],
+      ...results.map((r) => [
+        r.title,
+        r.data,
+        BarcodeFormatUtils.toExportString(r.format),
+        DateFormat('yyyy-MM-dd HH:mm').format(r.timestamp)
+      ])
+    ];
+
+    final csv = const ListToCsvConverter().convert(csvRows);
+    final bytes = Uint8List.fromList(utf8.encode(csv));
+
+    await Share.shareXFiles(
+      [XFile.fromData(bytes, mimeType: 'text/csv', name: 'scan_history_${DateTime.now().millisecondsSinceEpoch}.csv')],
+      subject: 'Scan History Export',
+    );
+  }
+  void _confirmClearData(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Clear all data?'),
+        content: Text('This will permanently delete all scan history.'),
+        actions: [
+          TextButton(
+            onPressed: Navigator.of(context).pop,
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              context.read<ScannedResultsCubit>().deleteAllResults();
+              Navigator.of(context).pop();
+            },
+            child: Text('Clear', style: TextStyle(color: AppColors.error)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PermissionsSection extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return _SettingsSection(
+      title: 'Permissions',
+      icon: Icons.security,
+      children: [
+        _PermissionTile(permission: Permission.camera),
+        _PermissionTile(permission: Permission.storage),
+      ],
+    );
+  }
+}
+
+class _AboutSection extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return _SettingsSection(
+      title: 'About',
+      icon: Icons.info,
+      children: [
+        ListTile(
+          leading: Icon(Icons.description, color: AppColors.info),
+          title: Text('Privacy Policy'),
+          onTap: () => _launchUrl('https://www.freeprivacypolicy.com/live/0a3c5408-4e24-48b0-93ff-a1e0ae61da74'),
+        ),
+        // If you have a Terms of Service, you can uncomment and update below:
+        // ListTile(
+        //   leading: Icon(Icons.assignment, color: AppColors.info),
+        //   title: Text('Terms of Service'),
+        //   onTap: () => _launchUrl('https://example.com/terms'),
+        // ),
+        FutureBuilder<PackageInfo>(
+          future: PackageInfo.fromPlatform(),
+          builder: (context, snapshot) {
+            String version = 'Loading...';
+            if (snapshot.hasData) {
+              version = snapshot.data!.version;
+            }
+            return ListTile(
+              leading: Icon(Icons.code, color: AppColors.info),
+              title: Text('App Version'),
+              trailing: Text(version),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  void _launchUrl(String url) async {
+    if (await canLaunchUrl(Uri.parse(url))) {
+      await launchUrl(Uri.parse(url));
+    }
+  }
+}
+
+class _SwitchSetting extends StatefulWidget {
+  final String title;
+  final String prefKey;
+  final IconData icon;
+  final Function(bool)? onChanged;
+  final bool initialValue;
+
+  const _SwitchSetting({
+    required this.title,
+    required this.prefKey,
+    required this.icon,
+    this.onChanged,
+    this.initialValue = false,
+  });
+
+  @override
+  State<_SwitchSetting> createState() => _SwitchSettingState();
+}
+
+class _SwitchSettingState extends State<_SwitchSetting> {
+  bool _value = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadValue();
+  }
+
+  Future<void> _loadValue() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _value = prefs.getBool(widget.prefKey) ?? widget.initialValue;
+    });
+  }
+
+  @override
+  void didUpdateWidget(_SwitchSetting oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialValue != widget.initialValue) {
+      _value = widget.initialValue;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SwitchListTile(
+      title: Text(widget.title),
+      secondary: Icon(widget.icon, color: AppColors.info),
+      value: widget.prefKey == 'auto_flash'
+          ? context.watch<ScannedResultsCubit>().state.autoFlashEnabled
+          : _value,
+      onChanged: (value) async {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool(widget.prefKey, value);
+
+        if (widget.prefKey == 'dark_mode') {
+          context.read<ThemeCubit>().toggleTheme(darkMode: value);
+        } else if (widget.prefKey == 'auto_flash') {
+          context.read<ScannedResultsCubit>().updateFlashState(value);
+        }
+
+        setState(() => _value = value);
+        print('-----------------testing--------------------------');
+      },
+    );
+  }
+}
+
+class _ColorCircle extends StatelessWidget {
+  final Color color;
+  final bool isSelected;
+  final VoidCallback onSelected;
+
+  const _ColorCircle({
+    required this.color,
+    required this.isSelected,
+    required this.onSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      onPressed: onSelected,
+      icon: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: color,
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: isSelected
+                ? Theme.of(context).colorScheme.onPrimary
+                : Colors.transparent,
+            width: 3,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SettingsSection extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final List<Widget> children;
+
+  const _SettingsSection({
+    required this.title,
+    required this.icon,
+    required this.children,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: EdgeInsets.all(AppSpacing.medium),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, color: Theme.of(context).colorScheme.primary),
+                SizedBox(width: AppSpacing.medium),
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ],
+            ),
+            Divider(height: AppSpacing.xlarge),
+            ...children,
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PermissionTile extends StatefulWidget {
+  final Permission permission;
+
+  const _PermissionTile({required this.permission});
+
+  @override
+  State<_PermissionTile> createState() => _PermissionTileState();
+}
+
+class _PermissionTileState extends State<_PermissionTile> {
+  PermissionStatus _status = PermissionStatus.denied;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkStatus();
+  }
+
+  Future<void> _checkStatus() async {
+    final status = await widget.permission.status;
+    if (mounted) setState(() => _status = status);
+  }
+
+  Future<void> _requestPermission() async {
+    final result = await widget.permission.request();
+    if (mounted) {
+      setState(() => _status = result);
+      if (result.isPermanentlyDenied) {
+        _showPermissionSettingsDialog();
+      }
+    }
+  }
+
+  void _showPermissionSettingsDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Permission Required'),
+        content: Text('Please enable this permission in app settings'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              openAppSettings();
+              Navigator.pop(context);
+            },
+            child: Text('Open Settings'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Icon(
+        _status.isGranted ? Icons.lock_open : Icons.lock_outline,
+        color: _status.isGranted ? AppColors.success : AppColors.error,
+      ),
+      title: Text(_getPermissionName()),
+      trailing: _status.isPermanentlyDenied
+          ? TextButton(
+        onPressed: openAppSettings,
+        child: Text('Open Settings'),
+      )
+          : _status.isGranted
+          ? null
+          : TextButton(
+        onPressed: () async {
+          if (await widget.permission.shouldShowRequestRationale) {
+            _showRationaleDialog();
+          } else {
+            _requestPermission();
+          }
+        },
+        child: Text('Request'),
+      ),
+    );
+  }
+
+  String _getPermissionName() {
+    switch (widget.permission) {
+      case Permission.camera:
+        return 'Camera Access';
+      case Permission.storage:
+        return 'File Storage';
+      default:
+        return widget.permission.toString().split('.').last;
+    }
+  }
+
+  void _showRationaleDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Permission Needed'),
+        content: Text('This permission is required for ${_getPermissionName()} functionality'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _requestPermission();
+            },
+            child: Text('Continue'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+#File: theme_cubit.dart ============================================================
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:barqr_manager/app_theme.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+class ThemeCubit extends Cubit<ThemeData> {
+  ThemeCubit() : super(AppTheme.lightTheme) {
+    _loadTheme();
+  }
+
+  Future<void> _loadTheme() async {
+    final prefs = await SharedPreferences.getInstance();
+    final darkMode = prefs.getBool('darkMode') ?? false;
+    final colorIndex = prefs.getInt('primaryColor') ?? 0;
+
+    // Ensure color index is within valid range
+    final validIndex = colorIndex.clamp(0, AppColors.primaries.length - 1);
+
+    emit(_buildTheme(
+      darkMode: darkMode,
+      primaryColor: AppColors.primaries[validIndex],
+    ));
+  }
+
+  void toggleTheme({bool? darkMode, Color? primaryColor}) async {
+    final prefs = await SharedPreferences.getInstance();
+    final currentDark = state.brightness == Brightness.dark;
+
+    // Force dark mode toggle even when color hasn't changed
+    final newDarkMode = darkMode ?? !currentDark;
+    final newColor = primaryColor ?? state.colorScheme.primary;
+
+    await prefs.setBool('darkMode', newDarkMode);
+    await prefs.setInt('primaryColor', AppColors.primaries.indexOf(newColor));
+
+    emit(_buildTheme(
+      darkMode: newDarkMode,
+      primaryColor: newColor,
+    ));
+  }
+
+  ThemeData _buildTheme({required bool darkMode, required Color primaryColor}) {
+    final baseTheme = darkMode ? AppTheme.darkTheme : AppTheme.lightTheme;
+    return baseTheme.copyWith(
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: primaryColor,
+        brightness: darkMode ? Brightness.dark : Brightness.light,
+      ),
+      // Force rebuild of text themes
+      textTheme: baseTheme.textTheme.apply(
+        bodyColor: darkMode ? Colors.white : Colors.black,
+        displayColor: darkMode ? Colors.white : Colors.black,
+      ),
+    );
+  }
+}

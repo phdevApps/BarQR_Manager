@@ -1,0 +1,2 @@
+C:/Users/xdev_55/StudioProjects/barqr_manager/android/app/.cxx/Debug/671c1e47/x86_64/CMakeFiles/edit_cache.dir
+C:/Users/xdev_55/StudioProjects/barqr_manager/android/app/.cxx/Debug/671c1e47/x86_64/CMakeFiles/rebuild_cache.dir

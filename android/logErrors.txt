@@ -1,4 +1,0 @@
-Note: C:\Users\xdev_55\AppData\Local\Pub\Cache\hosted\pub.dev\android_intent_plus-5.2.2\android\src\main\java\dev\fluttercommunity\plus\androidintent\MethodCallHandlerImpl.java uses unchecked or unsafe operations.
-Note: Recompile with -Xlint:unchecked for details.
-Note: C:\Users\xdev_55\AppData\Local\Pub\Cache\hosted\pub.dev\android_intent_plus-5.2.2\android\src\main\java\dev\fluttercommunity\plus\androidintent\MethodCallHandlerImpl.java uses unchecked or unsafe operations.
-Note: Recompile with -Xlint:unchecked for details.

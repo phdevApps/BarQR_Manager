@@ -1,3 +1,4 @@
+import 'package:package_info_plus/package_info_plus.dart';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:barqr_manager/settings_repository.dart';
@@ -41,40 +42,7 @@ class SettingsScreen extends StatelessWidget {
           _AboutSection(),
           // TODO the export tile refactore later
           SizedBox(height: AppSpacing.large),
-          ListTile(
-            leading: Icon(Icons.folder, color: AppColors.info),
-            title: Text('Save Location'),
-            subtitle: FutureBuilder<String>(
-              future: SettingsRepository().getSaveLocation(),
-              builder: (context, snapshot) {
-                return Text(snapshot.data == 'internal'
-                    ? 'Internal Storage/BarQR Manager'
-                    : 'App Documents');
-              },
-            ),
-            trailing: DropdownButton<String>(
-              value: 'internal',
-              items: [
-                DropdownMenuItem(
-                  value: 'internal',
-                  child: Text('Internal Storage'),
-                ),
-                DropdownMenuItem(
-                  value: 'app',
-                  child: Text('App Documents'),
-                ),
-              ],
-              onChanged: (value) async {
-                if (value != null) {
-                  await SettingsRepository().setSaveLocation(value);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Save location updated')),
-                  );
-                  context.read<ScannedResultsCubit>().fetchResults();
-                }
-              },
-            ),
-          ),
+
         ],
       ),
     );
@@ -186,6 +154,77 @@ class _DataSection extends StatelessWidget {
       title: 'Data',
       icon: Icons.storage,
       children: [
+        ListTile(
+          leading: Icon(Icons.folder, color: AppColors.info),
+          title: Text('Save Location'),
+          subtitle: FutureBuilder<Map<String, String>>(
+            future: Future.wait([
+              SettingsRepository().getSaveLocation(), // returns mode: 'internal', 'app', or 'custom'
+              SettingsRepository().getCustomSavePath(),
+            ]).then((values) => {
+              'mode': values[0]!,
+              'customPath': values[1] ?? '',
+            }),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) return Text('Loading...');
+              final mode = snapshot.data!['mode']!;
+              if (mode == 'internal') {
+                return Text('Internal Storage/BarQR Manager');
+              } else if (mode == 'app') {
+                return Text('App Documents');
+              } else if (mode == 'custom') {
+                final customPath = snapshot.data!['customPath']!;
+                return Text(customPath.isNotEmpty ? customPath : 'Custom Path not set');
+              }
+              return Text('Unknown');
+            },
+          ),
+          trailing: FutureBuilder<String>(
+            future: SettingsRepository().getSaveLocation(),
+            builder: (context, snapshot) {
+              final currentMode = snapshot.data ?? 'internal';
+              return DropdownButton<String>(
+                value: currentMode,
+                items: [
+                  DropdownMenuItem(
+                    value: 'internal',
+                    child: Text('Internal Storage'),
+                  ),
+                  DropdownMenuItem(
+                    value: 'app',
+                    child: Text('App Documents'),
+                  ),
+                  DropdownMenuItem(
+                    value: 'custom',
+                    child: Text('Custom Path'),
+                  ),
+                ],
+                onChanged: (value) async {
+                  if (value != null) {
+                    if (value == 'custom') {
+                      // Let the user select a custom directory.
+                      final String? selectedPath = await getDirectoryPath();
+                      if (selectedPath != null && selectedPath.isNotEmpty) {
+                        await SettingsRepository().setCustomSavePath(selectedPath);
+                        await SettingsRepository().setSaveLocation('custom');
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Custom save path updated')),
+                        );
+                      }
+                    } else {
+                      await SettingsRepository().setSaveLocation(value);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Save location updated')),
+                      );
+                    }
+                    context.read<ScannedResultsCubit>().fetchResults();
+                  }
+                },
+              );
+            },
+          ),
+        ),
+
         ListTile(
           leading: Icon(Icons.import_export, color: AppColors.info),
           title: Text('Export history'),
@@ -354,17 +393,27 @@ class _AboutSection extends StatelessWidget {
         ListTile(
           leading: Icon(Icons.description, color: AppColors.info),
           title: Text('Privacy Policy'),
-          onTap: () => _launchUrl('https://example.com/privacy'),
+          onTap: () => _launchUrl('https://www.freeprivacypolicy.com/live/0a3c5408-4e24-48b0-93ff-a1e0ae61da74'),
         ),
-        ListTile(
-          leading: Icon(Icons.assignment, color: AppColors.info),
-          title: Text('Terms of Service'),
-          onTap: () => _launchUrl('https://example.com/terms'),
-        ),
-        ListTile(
-          leading: Icon(Icons.code, color: AppColors.info),
-          title: Text('App Version'),
-          trailing: Text('1.0.0'),
+        // If you have a Terms of Service, you can uncomment and update below:
+        // ListTile(
+        //   leading: Icon(Icons.assignment, color: AppColors.info),
+        //   title: Text('Terms of Service'),
+        //   onTap: () => _launchUrl('https://example.com/terms'),
+        // ),
+        FutureBuilder<PackageInfo>(
+          future: PackageInfo.fromPlatform(),
+          builder: (context, snapshot) {
+            String version = 'Loading...';
+            if (snapshot.hasData) {
+              version = snapshot.data!.version;
+            }
+            return ListTile(
+              leading: Icon(Icons.code, color: AppColors.info),
+              title: Text('App Version'),
+              trailing: Text(version),
+            );
+          },
         ),
       ],
     );
